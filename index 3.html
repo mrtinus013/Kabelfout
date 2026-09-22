@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kabelfout Meetassistent</title>
+<style>
+:root{--nav:#0d3b5c;--bg:#eef3f6;--card:#fff;--line:#d6e0e6;--inp:#fff3b2;--ok:#e6f5e1;--warn:#fff0d8;--bad:#fde5e5;--txt:#172630;--muted:#667985}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--txt)}
+.app{max-width:1050px;margin:auto;padding:12px 12px 42px}.hero{background:var(--nav);color:white;border-radius:17px;padding:19px}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;opacity:.82}
+#tl,#td{position:absolute;left:-10000px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:11px 0}.tabs label{background:white;border:2px solid var(--line);border-radius:11px;padding:13px;text-align:center;font-weight:900;color:var(--nav)}
+#tl:checked~.tabs label[for=tl],#td:checked~.tabs label[for=td]{background:var(--nav);color:#fff;border-color:var(--nav)}
+.panel{display:none}#tl:checked~#loopPanel{display:block}#td:checked~#directPanel{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px;margin:10px 0;box-shadow:0 2px 10px #17374a0b}.card h2{font-size:17px;color:var(--nav);margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field label{display:block;font-size:13px;font-weight:850;margin-bottom:5px}.field small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+select,input{width:100%;height:47px;border:1px solid #bdcbd4;border-radius:9px;background:var(--inp);padding:9px 11px;font-size:16px}
+.status{padding:11px;border-radius:10px;background:#edf5f9;border-left:4px solid var(--nav);line-height:1.45;margin-top:10px}.status.ok{background:var(--ok);border-left-color:#64a257}.status.warn{background:var(--warn);border-left-color:#d69b2b}.status.bad{background:var(--bad);border-left-color:#c84a4a}
+.diagram{position:relative;background:#f7fafb;border:1px solid var(--line);border-radius:13px;padding:50px 68px 62px;min-height:390px;overflow:hidden}
+.side{position:absolute;top:13px;font-size:12px;font-weight:900;color:var(--nav)}.side.left{left:14px}.side.right{right:14px}
+.row{height:56px;position:relative}.wire{position:absolute;left:0;right:0;top:21px;height:13px;border-radius:8px;transition:.2s;box-shadow:inset 0 0 0 1px #0002}.wire.dim{opacity:.22}.tag{position:absolute;left:-53px;top:17px;width:45px;text-align:right;font-weight:950}
+.L1{background:#d83a3a}.L2{background:#e2ba28}.L3{background:#2874c8}.N{background:linear-gradient(90deg,#eadb31 0 50%,#43a95c 50%)}.SCHERM{background:#777}
+.fault{position:absolute;width:5px;background:#e13b35;z-index:4;left:57%;transition:.2s}.fault:after{content:"⚡";position:absolute;left:-15px;top:50%;transform:translateY(-50%);font-size:28px}
+.loop{position:absolute;right:19px;width:29px;border-right:6px solid #202a31;border-radius:0 17px 17px 0;z-index:4;transition:.2s}
+.source{position:absolute;left:9px;width:43px;border-left:5px solid #202a31;border-radius:15px 0 0 15px;z-index:4;transition:.2s}.source:after{content:"I";position:absolute;left:-5px;top:50%;transform:translate(-100%,-50%);background:#fff;border:2px solid #26343c;border-radius:50%;width:28px;height:28px;text-align:center;line-height:24px;font-weight:900}
+.meter{position:absolute;z-index:5;background:white;border:2px solid #27343d;border-radius:8px;padding:5px 7px;font-size:11px;font-weight:900;max-width:175px;transition:.2s}.m1{left:8px}.m2{right:8px}
+.key{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.key span{font-size:11px;font-weight:900;padding:5px 7px;border-radius:6px;color:#fff}.key .yellow{color:#222}
+.instructions{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.step{background:#f4f7f8;border-radius:9px;padding:9px;font-size:12px;line-height:1.4}.step b{display:block;color:var(--nav);margin-bottom:3px}
+.result{background:var(--ok);border:2px solid #74a86a;border-radius:13px;text-align:center;padding:16px}.result small{font-weight:950}.big{font-size:40px;font-weight:950;margin-top:4px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}.stat{background:#f5f7f8;border-radius:9px;text-align:center;padding:9px;font-size:12px}.stat b{display:block;font-size:17px;margin-top:3px}
+.mode{display:flex;gap:7px;margin-bottom:10px}.mode button{flex:1;border:1px solid #bfcdd5;background:#fff;color:var(--nav);font-weight:850;border-radius:9px;padding:10px}.mode button.on{background:var(--nav);color:#fff}
+details{margin-top:11px}summary{font-weight:850;color:var(--nav)}pre{white-space:pre-wrap;background:#f4f7f8;border-radius:8px;padding:10px;font-size:12px}
+@media(max-width:720px){.grid,.stats,.instructions{grid-template-columns:1fr}.diagram{padding-left:60px;padding-right:52px;min-height:410px}.meter{font-size:9px;max-width:125px}.big{font-size:35px}}
+</style></head><body><div class="app">
+<div class="hero"><h1>Kabelfout Meetassistent</h1><p>Interactieve aansluiting en foutafstandberekening</p></div>
+<input type="radio" name="tab" id="tl" checked><input type="radio" name="tab" id="td">
+<div class="tabs"><label for="tl">Lusmethode</label><label for="td">Directe methode</label></div>
+
+<section id="loopPanel" class="panel">
+<div class="card"><h2>1. Welke storing heb je?</h2><div class="grid">
+<div class="field"><label>Wat meet je als storing?</label><select id="faultType">
+<option value="PP">Fase ↔ fase</option>
+<option value="PNE" selected>Fase ↔ N/aarde</option>
+</select><small>Kies wat je elektrisch vaststelt; niet wat je vermoedt dat fysiek defect is.</small></div>
+<div class="field"><label>Gestoorde fase</label><select id="faultPhase"><option>L1</option><option selected>L2</option><option>L3</option></select></div>
+<div class="field ppOnly" style="display:none"><label>Tweede gestoorde fase</label><select id="faultPhase2"><option>L1</option><option>L2</option><option selected>L3</option></select></div>
+<div class="field"><label>Gezonde ader voor de lus</label><select id="healthy"><option value="AUTO">Automatisch kiezen</option><option>L1</option><option>L2</option><option>L3</option><option>N</option></select><small>De gekozen gezonde ader mag niet onderdeel van de fout zijn.</small></div>
+<div class="field"><label>Gestoorde ader in de stroomlus</label><select id="powered"><option value="AUTO">Automatisch</option><option>L1</option><option>L2</option><option>L3</option><option>N</option></select><small>Dit is één van de twee zijden van de fout.</small></div>
+</div><div id="logic" class="status"></div></div>
+
+<div class="card"><h2>2. Waar aansluiten en meten?</h2>
+<div class="diagram" id="diagram"><div class="side left">VOORZIJDE</div><div class="side right">ACHTERZIJDE</div>
+<div class="row" id="rL1"><span class="tag">L1</span><div class="wire L1"></div></div>
+<div class="row" id="rL2"><span class="tag">L2</span><div class="wire L2"></div></div>
+<div class="row" id="rL3"><span class="tag">L3</span><div class="wire L3"></div></div>
+<div class="row" id="rN"><span class="tag">N</span><div class="wire N"></div></div>
+<div class="row" id="rSCHERM"><span class="tag">Scherm</span><div class="wire SCHERM"></div></div>
+<div id="faultLine" class="fault"></div><div id="loopLine" class="loop"></div><div id="sourceLine" class="source"></div>
+<div id="m1" class="meter m1">Uv1</div><div id="m2" class="meter m2">Uv2</div></div>
+<div class="key"><span style="background:#d83a3a">L1 rood</span><span class="yellow" style="background:#e2ba28">L2 geel</span><span style="background:#2874c8">L3 blauw</span><span style="background:#43a95c">N geel/groen</span><span style="background:#777">Aardscherm</span></div>
+<div class="instructions"><div class="step"><b>VOEDING</b><span id="iSource"></span></div><div class="step"><b>LUS ACHTERZIJDE</b><span id="iLoop"></span></div><div class="step"><b>METING Uv1</b><span id="iM1"></span></div><div class="step"><b>METING Uv2</b><span id="iM2"></span></div></div>
+<div class="status ok">De meetstroom hoort via de gezonde ader en de gekozen gestoorde lusader te lopen, niet door de fout. De andere zijde van de fout is de meetreferentie voor Uv1/Uv2.</div>
+</div>
+<div class="card"><h2>3. Meetwaarden</h2><div class="mode"><button id="calcMode" class="on" type="button">Kabellengte berekenen</button><button id="knownMode" type="button">Kabellengte bekend</button></div>
+<div class="grid">
+<div class="field calc"><label>Materiaal gestoorde lusader</label><select id="mat"><option value="cu">Koper</option><option value="al">Aluminium</option></select></div>
+<div class="field calc"><label>Doorsnede (mm²)</label><select id="area"></select></div>
+<div class="field calc"><label>Meetstroom I (A)</label><input id="amps" inputmode="decimal" value="10"></div>
+<div class="field known" style="display:none"><label>Werkelijke kabellengte (m)</label><input id="known" inputmode="decimal" value="329"></div>
+<div class="field"><label>Uv1 — voorzijde tot fout (V) — verplicht</label><input id="uv1" inputmode="decimal" value="12,3"></div>
+<div class="field"><label>Totale lusspanning Uvt (V) — verplicht</label><input id="uvt" inputmode="decimal" value="28,8"><small>Meet de spanning over de volledige lus.</small></div>
+<div class="field"><label>Uv2 — automatisch berekend (V)</label><input id="uv2" inputmode="decimal" readonly><small>Uv2 = Uvt ÷ 2 − Uv1</small></div>
+</div></div>
+<div class="card"><h2>4. Resultaat</h2><div class="result"><small>AFSTAND TOT FOUT VANAF VOORZIJDE</small><div class="big" id="distance">—</div></div>
+<div class="stats"><div class="stat">Totale kabellengte<b id="total">—</b></div><div class="stat">Vanaf achterzijde<b id="back">—</b></div><div class="stat">Foutpositie<b id="percent">—</b></div></div><div id="calcMsg" class="status"></div><details><summary>Formules en tussenwaarden</summary><pre id="formula"></pre></details></div>
+</section>
+
+<section id="directPanel" class="panel">
+<div class="card"><h2>Directe methode</h2><div class="status">Voor een fout tussen twee geleiders: voeding rechtstreeks tussen beide gestoorde geleiders aan de voorzijde. Meet U1 aan de voorzijde en U2 aan de achterzijde tussen dezelfde twee geleiders. Geen lus aanbrengen.</div></div>
+<div class="card"><h2>Invoer</h2><div class="grid">
+<div class="field"><label>Materiaal</label><select id="dmat"><option value="cu">Koper</option><option value="al">Aluminium</option></select></div>
+<div class="field"><label>Doorsnede (mm²)</label><select id="darea"></select></div><div class="field"><label>Meetstroom (A)</label><input id="di" value="10" inputmode="decimal"></div>
+<div class="field"><label>U1 voorzijde (V)</label><input id="du1" value="7,3" inputmode="decimal"></div><div class="field"><label>U2 achterzijde / over fout (V)</label><input id="du2" value="2,1" inputmode="decimal"></div></div></div>
+<div class="card"><h2>Resultaat</h2><div class="result"><small>AFSTAND TOT FOUT VANAF VOORZIJDE</small><div class="big" id="ddistance">—</div></div><div id="dmsg" class="status"></div><details><summary>Formule</summary><pre id="dformula"></pre></details></div>
+</section></div>
+<script>
+(function(){
+var ids=["L1","L2","L3","N","SCHERM"], conductors=["L1","L2","L3","N"], mode="calc";
+function E(x){return document.getElementById(x)} function N(x){var v=E(x).value.trim().replace(",",".");return v===""?NaN:Number(v)}
+function rho(x){return E(x).value==="cu"?0.0175:0.0282} function F(x,u,d){return isFinite(x)?x.toFixed(d==null?1:d).replace(".",",")+" "+u:"—"}
+var sizes=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240,300,400,500,630];
+function fill(id,def){sizes.forEach(function(v){var o=document.createElement("option");o.value=v;o.textContent=String(v).replace(".",",");E(id).appendChild(o)});E(id).value=def} fill("area",4);fill("darea",6);
+function topOf(id){return E("r"+id).offsetTop+28}
+function autoHealthy(a,b){return conductors.filter(function(x){return x!==a&&x!==b})[0]||null}
+function setup(){
+ var type=E("faultType").value, phase=E("faultPhase").value, phase2=E("faultPhase2").value;
+ document.querySelectorAll(".ppOnly").forEach(function(x){x.style.display=type==="PP"?"block":"none"});
+ var a=phase,b=(type==="PP"?phase2:"N");
+ var h=E("healthy").value,p=E("powered").value;
+ if(h==="AUTO")h=conductors.filter(function(x){return x!==a&&x!==b})[0]||null;
+ if(p==="AUTO")p=a;
+ var ref=(type==="PP" ? (p===a?b:a) : "N");
+ var valid=true,reasons=[];
+ if(type==="PP" && a===b){valid=false;reasons.push("Kies twee verschillende fasen.")}
+ if(!h || h===a || h===b){valid=false;reasons.push("Kies een gezonde lusader die geen onderdeel van de gemeten storing is.")}
+ if(p!==a && !(type==="PP" && p===b)){valid=false;reasons.push("De gestoorde lusader moet één van de gestoorde fasen zijn.")}
+ if(h===p){valid=false;reasons.push("Gezonde ader en gestoorde lusader mogen niet dezelfde zijn.")}
+ var logic=E("logic");logic.className="status "+(valid?"ok":"bad");
+ if(valid){
+   if(type==="PNE"){
+     logic.innerHTML="<b>Gemeten storing:</b> "+phase+" ↔ N/aarde. <b>Let op:</b> door N-aardekoppelingen bepaalt dit niet of de fysieke fout naar N of aardscherm loopt. Gezonde lusader: "+h+".";
+   } else {
+     logic.innerHTML="<b>Gemeten storing:</b> "+a+" ↔ "+b+". Gezonde lusader: "+h+". Gestoorde lusader: "+p+".";
+   }
+ } else logic.innerHTML="<b>Opstelling niet geldig.</b> "+reasons.join(" ");
+ ids.forEach(function(id){E("r"+id).querySelector(".wire").classList.toggle("dim",valid && [h,p,ref].indexOf(id)<0)});
+ if(!valid){E("faultLine").style.display=E("loopLine").style.display=E("sourceLine").style.display=E("m1").style.display=E("m2").style.display="none";return}
+ var ya=topOf(p),yb=topOf(ref),yh=topOf(h),yp=topOf(p),yr=topOf(ref);
+ var fl=E("faultLine");fl.style.display="block";fl.style.top=Math.min(ya,yb)+"px";fl.style.height=Math.max(8,Math.abs(ya-yb))+"px";
+ var ll=E("loopLine");ll.style.display="block";ll.style.top=Math.min(yh,yp)+"px";ll.style.height=Math.max(8,Math.abs(yh-yp))+"px";
+ var sl=E("sourceLine");sl.style.display="block";sl.style.top=Math.min(yh,yp)+"px";sl.style.height=Math.max(8,Math.abs(yh-yp))+"px";
+ var m1=E("m1"),m2=E("m2");m1.style.display=m2.style.display="block";m1.style.top=(Math.min(yp,yr)+8)+"px";m2.style.top=(Math.max(yp,yr)-5)+"px";
+ m1.textContent="V • Uv1: "+p+" ↔ "+(type==="PNE"?"N/aarde-pad":ref);
+ m2.textContent="V • Uv2: "+p+" ↔ "+(type==="PNE"?"N/aarde-pad":ref);
+ E("iSource").textContent="Voorzijde tussen "+h+" en "+p+".";
+ E("iLoop").textContent="Verbind "+h+" en "+p+" aan het verre kabeluiteinde.";
+ E("iM1").textContent="Voorzijde tussen "+p+" en "+(type==="PNE"?"de gekozen N/aarde-meetreferentie":ref)+".";
+ E("iM2").textContent="Achterzijde tussen "+p+" en "+(type==="PNE"?"dezelfde N/aarde-meetreferentie":ref)+".";
+ calc();
+}
+function calc(){
+ var u1=N("uv1"),uvt=N("uvt");
+ if(!(u1>=0&&uvt>0)){
+   E("distance").textContent="—";E("uv2").value="";
+   E("calcMsg").textContent="Vul Uv1 en de totale lusspanning Uvt in.";
+   return;
+ }
+ var uader=uvt/2;
+ var u2=uader-u1;
+ if(u2<0){
+   E("distance").textContent="—";E("uv2").value="";
+   E("calcMsg").textContent="Controleer de meetwaarden: Uv1 kan niet groter zijn dan Uvt ÷ 2.";
+   return;
+ }
+ E("uv2").value=u2.toFixed(3).replace(".",",");
+ var frac=u1/uader,total,text;
+ if(mode==="known"){
+   total=N("known");
+   if(!(total>0)){E("distance").textContent="—";return}
+   text="Uv2 = Uvt ÷ 2 − Uv1 = "+uvt.toFixed(3)+" ÷ 2 − "+u1.toFixed(3)+" = "+u2.toFixed(3)+" V\n"+
+        "Uader = Uvt ÷ 2 = "+uader.toFixed(3)+" V\n"+
+        "Lfout = Uv1/Uader × Ltotaal";
+ } else {
+   var I=N("amps"),A=N("area"),r=rho("mat");
+   if(!(I>0&&A>0)){E("distance").textContent="—";return}
+   var R=uader/I;
+   total=R*A/r;
+   text="Uv2 = Uvt ÷ 2 − Uv1 = "+uvt.toFixed(3)+" ÷ 2 − "+u1.toFixed(3)+" = "+u2.toFixed(3)+" V\n"+
+        "Uader = Uvt ÷ 2 = "+uader.toFixed(3)+" V\n"+
+        "Rader = Uader/I = "+R.toFixed(5)+" Ω\n"+
+        "Ltotaal = Rader×A/ρ = "+total.toFixed(2)+" m";
+ }
+ var d=frac*total;
+ E("distance").textContent=F(d,"m");
+ E("total").textContent=F(total,"m");
+ E("back").textContent=F(total-d,"m");
+ E("percent").textContent=F(frac*100,"%",1);
+ E("calcMsg").textContent="Uv2 is berekend als Uvt ÷ 2 − Uv1. Voor deze berekening moeten beide lusaders dezelfde weerstand per meter hebben.";
+ E("formula").textContent=text+"\nFoutfractie = "+(frac*100).toFixed(2)+" %\nLfout = "+d.toFixed(2)+" m";
+}
+function setMode(x){mode=x;document.querySelectorAll(".calc").forEach(function(z){z.style.display=x==="calc"?"block":"none"});document.querySelectorAll(".known").forEach(function(z){z.style.display=x==="known"?"block":"none"});E("calcMode").className=x==="calc"?"on":"";E("knownMode").className=x==="known"?"on":"";calc()}
+E("calcMode").onclick=function(){setMode("calc")};E("knownMode").onclick=function(){setMode("known")};
+["faultType","faultPhase","faultPhase2","healthy","powered"].forEach(function(x){E(x).addEventListener("change",setup)});
+["mat","area","amps","known","uv1","uvt"].forEach(function(x){E(x).addEventListener("input",calc);E(x).addEventListener("change",calc)});
+function dc(){var A=N("darea"),I=N("di"),u1=N("du1"),u2=N("du2"),r=rho("dmat");if(!(A>0&&I>0&&u1>=u2&&u2>=0)){E("ddistance").textContent="—";E("dmsg").textContent="Controleer de meetwaarden.";return}var du=u1-u2,R=du/I,L=R*A/(2*r);E("ddistance").textContent=F(L,"m");E("dmsg").textContent="ΔU is de spanningsval over heen- en teruggaande geleider tot de fout.";E("dformula").textContent="ΔU=U1−U2="+du.toFixed(3)+" V\nRheen+terug=ΔU/I="+R.toFixed(5)+" Ω\nLfout=R×A/(2ρ)="+L.toFixed(2)+" m"}
+["dmat","darea","di","du1","du2"].forEach(function(x){E(x).addEventListener("input",dc);E(x).addEventListener("change",dc)});
+window.addEventListener("resize",setup);setTimeout(setup,0);calc();dc();
+})();
+</script></body></html>
